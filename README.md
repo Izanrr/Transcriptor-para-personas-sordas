@@ -16,7 +16,3 @@ Abre la web publicada en Safari (funciona mejor en iPhone), dale permiso de micr
 ## Estado del proyecto
 
 Prototipo en desarrollo activo. Pensado de momento para conversaciones cara a cara; explorando cómo extenderlo a videollamadas.
-
-## Nota
-
-Este proyecto se ha desarrollado con ayuda de Claude (Anthropic).
