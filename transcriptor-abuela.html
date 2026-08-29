@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Se escucha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500;1,9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6EFEE;
+    --bg-2: #EFE3E6;
+    --card: #FFFCFB;
+    --ink: #2C2230;
+    --muted: #8C7B87;
+    --accent: #A8455A;
+    --accent-deep: #7C3247;
+    --accent-soft: #F2D9DE;
+    --sage: #6F8F76;
+    --border: #E9DCDD;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    font-family: "Work Sans", -apple-system, "SF Pro Text", sans-serif;
+    background:
+      radial-gradient(120% 90% at 15% -10%, var(--bg-2) 0%, transparent 55%),
+      radial-gradient(100% 80% at 100% 0%, #EAF0EC 0%, transparent 50%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 18px 70px;
+  }
+
+  .header-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .halo {
+    position: absolute;
+    top: -34px;
+    width: 210px;
+    height: 210px;
+    z-index: 0;
+    opacity: 0.9;
+  }
+  .halo circle {
+    fill: none;
+    stroke-width: 1.4;
+  }
+  .halo .c1 { stroke: var(--accent); opacity: .35; }
+  .halo .c2 { stroke: var(--sage); opacity: .3; }
+  .halo .c3 { stroke: #C79A3B; opacity: .28; }
+  body.listening .halo { animation: breathe 2.6s ease-in-out infinite; }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.06); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.listening .halo { animation: none; }
+  }
+
+  h1 {
+    position: relative;
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: -0.01em;
+    margin: 18px 0 2px;
+    text-align: center;
+    color: var(--accent-deep);
+  }
+  .subtitle {
+    position: relative;
+    color: var(--muted);
+    font-size: 15px;
+    text-align: center;
+    margin-bottom: 22px;
+    max-width: 340px;
+    line-height: 1.4;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-bottom: 22px;
+    box-shadow: 0 1px 2px rgba(44, 34, 48, 0.04);
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted);
+  }
+  .dot.live { background: #C0455B; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  button.main-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: "Work Sans", sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    padding: 18px 32px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+    color: #FFF7F5;
+    cursor: pointer;
+    box-shadow: 0 8px 20px -6px rgba(124, 50, 71, 0.45);
+    transition: transform .12s ease, box-shadow .12s ease;
+    width: 100%;
+    max-width: 400px;
+  }
+  button.main-btn:active { transform: scale(0.98); box-shadow: 0 4px 12px -4px rgba(124, 50, 71, 0.4); }
+  button.main-btn.stop { background: linear-gradient(135deg, #6E6470 0%, #4C4350 100%); box-shadow: 0 8px 20px -6px rgba(76, 67, 80, 0.4); }
+  button.main-btn svg { flex-shrink: 0; }
+
+  .panel {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card);
+    border-radius: 24px;
+    border: 1px solid var(--border);
+    margin-top: 22px;
+    padding: 20px;
+    min-height: 110px;
+    box-shadow: 0 2px 14px -6px rgba(44, 34, 48, 0.06);
+  }
+  .panel h2 {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 17px;
+    color: var(--accent-deep);
+    margin: 0 0 14px;
+  }
+  .transcript-empty {
+    color: var(--muted);
+    text-align: center;
+    padding: 34px 12px;
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+  .bubble {
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .bubble:last-child { border-bottom: none; }
+  .speaker-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+  .speaker-tag::before {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+  }
+  .bubble-text { font-size: 16.5px; line-height: 1.5; color: var(--ink); }
+
+  .rename-section { margin-top: 20px; }
+  .speaker-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .speaker-row:last-child { border-bottom: none; }
+  .swatch { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
+  .speaker-row input {
+    flex: 1;
+    font-size: 15.5px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    font-family: "Work Sans", sans-serif;
+    background: #FBF7F6;
+  }
+  .speaker-row input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  .hint {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+  .warning-box {
+    max-width: 400px;
+    background: #FBF0DD;
+    border: 1px solid #EAD3A0;
+    color: #8A6420;
+    font-size: 13.5px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+  .bubble.interim {
+    opacity: 0.5;
+  }
+  .bubble.interim .bubble-text {
+    font-style: italic;
+  }
+  .top-link-row {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .link-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: "Work Sans", sans-serif;
+    font-size: 12.5px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .saved-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .saved-row:last-child { border-bottom: none; }
+  .saved-row .name { flex: 1; font-size: 15px; font-family: "Fraunces", serif; font-style: italic; }
+  body.dark {
+    --bg: #1E1620;
+    --bg-2: #241A28;
+    --card: #2A2030;
+    --ink: #F3E9EC;
+    --muted: #B8A6B0;
+    --accent: #E08093;
+    --accent-deep: #F0A3B2;
+    --accent-soft: #3A2530;
+    --sage: #8FB79A;
+    --border: #3D303F;
+  }
+  body.dark { background: var(--bg); }
+  body.dark .halo .c1, body.dark .halo .c2, body.dark .halo .c3 { opacity: 0.45; }
+  body.dark .speaker-tag { filter: brightness(1.25) saturate(1.1); }
+  body.dark .warning-box { background: #3A2E15; border-color: #5C4A20; color: #E8C97A; }
+
+  .delete-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-family: "Work Sans", sans-serif;
+    cursor: pointer;
+  }
+
+  .theme-toggle {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 999px;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+  }
+</style>
+</head>
+<body>
+
+  <div class="header-wrap">
+    <svg class="halo" viewBox="0 0 210 210" xmlns="http://www.w3.org/2000/svg">
+      <circle class="c1" cx="105" cy="105" r="60"/>
+      <circle class="c2" cx="105" cy="105" r="80"/>
+      <circle class="c3" cx="105" cy="105" r="100"/>
+    </svg>
+    <h1>Se escucha</h1>
+    <div class="subtitle">Cada persona en su propio color. Ponles nombre una vez y no hará falta más.</div>
+  </div>
+
+  <div class="top-link-row">
+    <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+      <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="link-btn" id="managePeopleBtn">Personas guardadas</button>
+  </div>
+
+  <div class="warning-box" id="compatWarning" style="display:none;">
+    Este navegador no soporta el reconocimiento de voz necesario. Pruébalo en Safari (iPhone) o Chrome.
+  </div>
+
+  <div class="status-pill">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusText">Detenido</span>
+  </div>
+
+  <button class="main-btn" id="toggleBtn">
+    <svg id="btnIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M19 11a7 7 0 0 1-14 0M12 18v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span id="btnLabel">Empezar a escuchar</span>
+  </button>
+
+  <div class="panel">
+    <h2>Conversación</h2>
+    <div id="transcript">
+      <div class="transcript-empty">Aquí aparecerá lo que se va hablando, separado por persona.</div>
+    </div>
+  </div>
+
+  <div class="panel rename-section" id="renamePanel" style="display:none;">
+    <h2>Poner nombre a cada persona</h2>
+    <div id="speakerList"></div>
+    <div class="hint">Escribe el nombre y pulsa fuera del cuadro para guardarlo. La próxima vez que hable, la app ya la reconocerá.</div>
+  </div>
+
+  <div class="panel" id="managePanel" style="display:none;">
+    <h2>Personas guardadas</h2>
+    <div id="savedList"></div>
+    <div class="hint" id="savedEmptyHint" style="display:none;">Aún no hay ninguna persona guardada.</div>
+  </div>
+
+<script>
+  const COLORS = ['#A8455A', '#3E7C7C', '#C79A3B', '#7A5980', '#4C6C94', '#6F8F76', '#B5573A', '#5C6BC0'];
+
+  const STORAGE_KEY = 'voiceProfiles_v1';
+  const THEME_KEY = 'themePreference_v1';
+
+  let recognition = null;
+  let listening = false;
+  let audioCtx, analyser, micStream, pitchInterval;
+  let pitchSamples = []; // rolling pitch samples while user is speaking
+  let speakers = loadProfiles(); // {id, avgPitch, color, name, saved}
+  let transcriptEntries = []; // {speakerId, text}
+  let lastMatchedSpeakerId = null; // para etiquetar el texto provisional al instante
+
+  const toggleBtn = document.getElementById('toggleBtn');
+  const btnLabel = document.getElementById('btnLabel');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const transcriptEl = document.getElementById('transcript');
+  const renamePanel = document.getElementById('renamePanel');
+  const speakerListEl = document.getElementById('speakerList');
+  const compatWarning = document.getElementById('compatWarning');
+  const managePeopleBtn = document.getElementById('managePeopleBtn');
+  const managePanel = document.getElementById('managePanel');
+  const savedListEl = document.getElementById('savedList');
+  const savedEmptyHint = document.getElementById('savedEmptyHint');
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+
+  const SUN_PATH = '<circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+  const MOON_PATH = '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>';
+
+  function applyTheme(dark) {
+    document.body.classList.toggle('dark', dark);
+    themeIcon.innerHTML = dark ? SUN_PATH : MOON_PATH;
+  }
+
+  function loadThemePreference() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'dark') return true;
+    if (saved === 'light') return false;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  applyTheme(loadThemePreference());
+
+  themeToggle.addEventListener('click', () => {
+    const nowDark = !document.body.classList.contains('dark');
+    applyTheme(nowDark);
+    localStorage.setItem(THEME_KEY, nowDark ? 'dark' : 'light');
+  });
+
+  managePeopleBtn.addEventListener('click', () => {
+    const isOpen = managePanel.style.display === 'block';
+    managePanel.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) renderSavedPanel();
+  });
+
+  function loadProfiles() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return parsed.map(s => ({
+        ...s,
+        pitchHistory: Array.isArray(s.pitchHistory) && s.pitchHistory.length ? s.pitchHistory : [s.avgPitch]
+      }));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveProfiles() {
+    try {
+      const named = speakers.filter(s => s.name);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(named));
+    } catch (e) {
+      console.warn('No se pudo guardar en este navegador', e);
+    }
+  }
+
+  function renderSavedPanel() {
+    const saved = speakers.filter(s => s.name);
+    if (saved.length === 0) {
+      savedListEl.innerHTML = '';
+      savedEmptyHint.style.display = 'block';
+      return;
+    }
+    savedEmptyHint.style.display = 'none';
+    savedListEl.innerHTML = saved.map(sp => `
+      <div class="saved-row">
+        <div class="swatch" style="background:${sp.color}"></div>
+        <div class="name">${escapeHtml(sp.name)}</div>
+        <button class="delete-btn" data-id="${sp.id}">Olvidar</button>
+      </div>
+    `).join('');
+    savedListEl.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.target.dataset.id;
+        speakers = speakers.filter(s => s.id !== id);
+        saveProfiles();
+        renderSavedPanel();
+      });
+    });
+  }
+
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognitionAPI) {
+    compatWarning.style.display = 'block';
+    toggleBtn.disabled = true;
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    if (!listening) startListening(); else stopListening();
+  });
+
+  async function startListening() {
+    listening = true;
+    btnLabel.textContent = 'Detener';
+    toggleBtn.classList.add('stop');
+    statusDot.classList.add('live');
+    statusText.textContent = 'Escuchando…';
+    document.body.classList.add('listening');
+    renamePanel.style.display = 'none';
+
+    // Audio pitch analysis
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaStreamSource(micStream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      source.connect(analyser);
+      pitchInterval = setInterval(samplePitch, 100);
+    } catch (e) {
+      console.error('No se pudo acceder al micrófono para el análisis de tono', e);
+    }
+
+    // Speech recognition
+    recognition = new SpeechRecognitionAPI();
+    recognition.lang = 'es-ES';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = (event) => {
+      let interimText = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          const text = result[0].transcript.trim();
+          if (text) handleFinalUtterance(text);
+        } else {
+          interimText += result[0].transcript;
+        }
+      }
+      renderTranscript(interimText.trim());
+    };
+
+    recognition.onerror = (e) => console.warn('Error de reconocimiento:', e.error);
+
+    recognition.onend = () => {
+      // Safari/iOS corta el reconocimiento solo — lo reiniciamos si seguimos "escuchando"
+      if (listening) {
+        try { recognition.start(); } catch (e) {}
+      }
+    };
+
+    recognition.start();
+  }
+
+  function stopListening() {
+    listening = false;
+    btnLabel.textContent = 'Empezar a escuchar';
+    toggleBtn.classList.remove('stop');
+    statusDot.classList.remove('live');
+    statusText.textContent = 'Detenido';
+    document.body.classList.remove('listening');
+
+    if (recognition) { recognition.onend = null; recognition.stop(); }
+    if (pitchInterval) clearInterval(pitchInterval);
+    if (micStream) micStream.getTracks().forEach(t => t.stop());
+    if (audioCtx) audioCtx.close();
+
+    if (speakers.length > 0) renderRenamePanel();
+  }
+
+  function samplePitch() {
+    if (!analyser) return;
+    const buffer = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(buffer);
+    const pitch = autoCorrelate(buffer, audioCtx.sampleRate);
+    if (pitch > 0) pitchSamples.push(pitch);
+    if (pitchSamples.length > 30) pitchSamples.shift();
+  }
+
+  function handleFinalUtterance(text) {
+    const avgPitch = pitchSamples.length
+      ? pitchSamples.reduce((a, b) => a + b, 0) / pitchSamples.length
+      : null;
+    pitchSamples = [];
+
+    const speakerId = matchOrCreateSpeaker(avgPitch);
+    lastMatchedSpeakerId = speakerId;
+    transcriptEntries.push({ speakerId, text });
+  }
+
+  function tentativeMatch() {
+    if (pitchSamples.length === 0) return null;
+    const avg = pitchSamples.reduce((a, b) => a + b, 0) / pitchSamples.length;
+    let best = null, bestDiff = Infinity;
+    for (const s of speakers) {
+      const diff = Math.abs(s.avgPitch - avg);
+      if (diff < bestDiff) { bestDiff = diff; best = s; }
+    }
+    return (best && bestDiff < 25) ? best : null;
+  }
+
+  function matchOrCreateSpeaker(avgPitch) {
+    if (avgPitch == null) {
+      if (speakers.length === 0) return createSpeaker(120);
+      return speakers[0].id;
+    }
+    const THRESHOLD_HZ = 35; // margen más amplio para variaciones naturales de tono
+    const HISTORY_SIZE = 8;  // nº de frases recientes que se promedian por persona
+
+    let best = null, bestDiff = Infinity;
+    for (const s of speakers) {
+      const diff = Math.abs(s.avgPitch - avgPitch);
+      if (diff < bestDiff) { bestDiff = diff; best = s; }
+    }
+    if (best && bestDiff < THRESHOLD_HZ) {
+      best.pitchHistory.push(avgPitch);
+      if (best.pitchHistory.length > HISTORY_SIZE) best.pitchHistory.shift();
+      best.avgPitch = best.pitchHistory.reduce((a, b) => a + b, 0) / best.pitchHistory.length;
+      return best.id;
+    }
+    return createSpeaker(avgPitch);
+  }
+
+  function createSpeaker(avgPitch) {
+    const id = 'sp' + speakers.length;
+    const color = COLORS[speakers.length % COLORS.length];
+    speakers.push({ id, avgPitch, pitchHistory: [avgPitch], color, name: null });
+    return id;
+  }
+
+  function speakerLabel(sp) {
+    return sp.name || `Hablante ${speakers.indexOf(sp) + 1}`;
+  }
+
+  function renderTranscript(interimText) {
+    if (transcriptEntries.length === 0 && !interimText) {
+      transcriptEl.innerHTML = '<div class="transcript-empty">Aquí aparecerá lo que se va hablando, separado por persona.</div>';
+      return;
+    }
+    let html = transcriptEntries.map(entry => {
+      const sp = speakers.find(s => s.id === entry.speakerId);
+      return `<div class="bubble">
+        <div class="speaker-tag" style="color:${sp.color}">${speakerLabel(sp)}</div>
+        <div class="bubble-text">${escapeHtml(entry.text)}</div>
+      </div>`;
+    }).join('');
+
+    if (interimText) {
+      const guessSp = speakers.find(s => s.id === lastMatchedSpeakerId) || speakers[0];
+      const tagColor = guessSp ? guessSp.color : '#8C7B87';
+      const tagLabel = guessSp ? speakerLabel(guessSp) : '…';
+      html += `<div class="bubble interim">
+        <div class="speaker-tag" style="color:${tagColor}">${tagLabel}</div>
+        <div class="bubble-text">${escapeHtml(interimText)}</div>
+      </div>`;
+    }
+
+    transcriptEl.innerHTML = html;
+    transcriptEl.scrollTop = transcriptEl.scrollHeight;
+  }
+
+  function renderRenamePanel() {
+    renamePanel.style.display = 'block';
+    speakerListEl.innerHTML = speakers.map((sp, i) => `
+      <div class="speaker-row">
+        <div class="swatch" style="background:${sp.color}"></div>
+        <input type="text" placeholder="Hablante ${i + 1}" value="${sp.name || ''}" data-id="${sp.id}">
+      </div>
+    `).join('');
+    speakerListEl.querySelectorAll('input').forEach(input => {
+      input.addEventListener('change', (e) => {
+        const sp = speakers.find(s => s.id === e.target.dataset.id);
+        sp.name = e.target.value.trim() || null;
+        saveProfiles();
+        renderTranscript('');
+      });
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // --- Detección de tono fundamental por autocorrelación ---
+  function autoCorrelate(buf, sampleRate) {
+    const SIZE = buf.length;
+    let rms = 0;
+    for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+    rms = Math.sqrt(rms / SIZE);
+    if (rms < 0.01) return -1; // silencio
+
+    let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+    for (let i = 0; i < SIZE / 2; i++) if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+    for (let i = 1; i < SIZE / 2; i++) if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+    const trimmed = buf.slice(r1, r2);
+    const newSize = trimmed.length;
+
+    const c = new Array(newSize).fill(0);
+    for (let i = 0; i < newSize; i++)
+      for (let j = 0; j < newSize - i; j++)
+        c[i] += trimmed[j] * trimmed[j + i];
+
+    let d = 0;
+    while (c[d] > c[d + 1]) d++;
+    let maxval = -1, maxpos = -1;
+    for (let i = d; i < newSize; i++) {
+      if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
+    }
+    let T0 = maxpos;
+    if (T0 <= 0) return -1;
+    const freq = sampleRate / T0;
+    if (freq < 60 || freq > 500) return -1; // fuera de rango de voz humana
+    return freq;
+  }
+</script>
+</body>
+</html>
